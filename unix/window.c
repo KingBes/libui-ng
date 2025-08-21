@@ -190,6 +190,22 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	gtk_window_set_title(w->window, title);
 }
 
+SetIconErrorCode uiWindowSetIcon(uiWindow *w, const char *iconFilePath)
+{
+	if (w->window == NULL)
+	{
+		return WINDOW_NOT_FOUND;
+	}
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(iconFilePath, NULL);
+	if (pixbuf == NULL)
+	{
+		return ICON_NOT_FOUND;
+	}
+	gtk_window_set_icon(w->window, pixbuf);
+	g_object_unref(pixbuf);
+	return OK;
+}
+
 void uiWindowPosition(uiWindow *w, int *x, int *y)
 {
 	gtk_window_get_position(w->window, x, y);

@@ -251,6 +251,11 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	[w->window setTitle:uiprivToNSString(title)];
 }
 
+SetIconErrorCode uiWindowSetIcon(uiWindow *w, const char *iconFilePath)
+{
+	return OS_UNSUPPORTED;
+}
+
 void uiWindowPosition(uiWindow *w, int *x, int *y)
 {
 	NSRect screen;

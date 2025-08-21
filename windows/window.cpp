@@ -310,6 +310,29 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	// don't queue resize; the caption isn't part of what affects layout and sizing of the client area (it'll be ellipsized if too long)
 }
 
+SetIconErrorCode uiWindowSetIcon(uiWindow *w, const char *iconFilePath)
+{
+	if (w->hwnd == NULL)
+	{
+		return WINDOW_NOT_FOUND;
+	}
+	size_t size = strlen(iconFilePath) + 1;
+	wchar_t *iconPath = static_cast<wchar_t *>(malloc(size * sizeof(wchar_t)));
+	mbstowcs(iconPath, iconFilePath, size);
+	HICON hIcon = static_cast<HICON>(LoadImageW(NULL, iconPath, IMAGE_ICON, 0, 0, LR_LOADFROMFILE));
+	if (hIcon == NULL)
+	{
+		free(iconPath);
+		return ICON_NOT_FOUND;
+	}
+	// Set the application icon
+	SendMessageW(w->hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+	// Cleanup
+	free(iconPath);
+	DestroyIcon(hIcon);
+	return OK;
+}
+
 // this is used for both fullscreening and centering
 // see also https://blogs.msdn.microsoft.com/oldnewthing/20100412-00/?p=14353 and https://blogs.msdn.microsoft.com/oldnewthing/20050505-04/?p=35703
 static void windowMonitorRect(HWND hwnd, RECT *r)

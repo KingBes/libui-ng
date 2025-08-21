@@ -314,6 +314,29 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
 
 /**
+ * Error codes for uiWindowSetIcon().
+ *
+ * @enum SetIconErrorCode
+ * @memberof uiWindow
+ */
+_UI_ENUM(SetIconErrorCode) {
+	OK = 0,
+	WINDOW_NOT_FOUND,
+	ICON_NOT_FOUND,
+	OS_UNSUPPORTED,
+};
+
+/**
+ * Sets the window icon.
+ *
+ * @param w uiWindow instance.
+ * @param iconFilePath Path to the icon file.
+ * @returns SetIconErrorCode
+ * @memberof uiWindow
+ */
+_UI_EXTERN SetIconErrorCode uiWindowSetIcon(uiWindow *w, const char *iconFilePath);
+
+/**
  * Gets the window position.
  *
  * Coordinates are measured from the top left corner of the screen.
