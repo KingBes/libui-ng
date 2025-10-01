@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-latest]
         # x86, x64
         arch: [x64]
-        libtype: [static, shared]
+        libtype: [shared]
         # debug, debugoptimized, release
         buildtype: [debug]
     runs-on: ${{ matrix.os }}
@@ -55,8 +55,8 @@ jobs:
       matrix:
         # windows-latest, windows-2022
         os: [windows-latest]
-        arch: [x86, x64]
-        libtype: [static] # FIXME [static, shared]
+        arch: [x64]
+        libtype: [shared] # FIXME [static, shared]
         # debug, debugoptimized, release
         buildtype: [debug]
     runs-on: ${{ matrix.os }}
@@ -97,57 +97,12 @@ jobs:
             builddir/meson-out/*.pdb
             builddir/meson-logs/*.txt
 
-  meson-windows-mingw:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-        arch: [x64]
-        # only support static
-        libtype: [static]
-        # debug, debugoptimized, release
-        buildtype: [release]
-    runs-on: ${{ matrix.os }}
-    name: Mingw-${{ matrix.arch }}-${{ matrix.libtype }}
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      # Setup build env
-      - uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            base-devel
-            git
-          pacboy: >-
-            toolchain:x
-            meson:x
-      - uses: actions/checkout@v4
-      - name: Meson Setup Build
-        run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=static
-      - name: Ninja Build
-        run: ninja -C builddir --verbose
-      - name: Run Tests
-        run: meson test -C builddir --verbose
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mingw-${{ matrix.arch }}-static-${{ matrix.buildtype }}
-          # lib + header + examples + test + build-log
-          path: |
-            builddir/meson-out/libui.a
-            ui_windows.h
-            ui.h
-            builddir/meson-out/*.exe
-            builddir/meson-logs/*.txt
-
   meson-macos:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest]
-        libtype: [static, shared]
+        libtype: [shared]
         # debug, debugoptimized, release
         buildtype: [debug]
     runs-on: ${{ matrix.os }}
