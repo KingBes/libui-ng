@@ -65,10 +65,16 @@ void uiDrawFreeTextLayout(uiDrawTextLayout *tl)
 
 void uiDrawText(uiDrawContext *c, uiDrawTextLayout *tl, double x, double y)
 {
-	// TODO have an implicit save/restore on each drawing functions instead? and is this correct?
+	// Save the current context state before modifying it
+	cairo_save(c->cr);
+	// Set text color to black
 	cairo_set_source_rgb(c->cr, 0.0, 0.0, 0.0);
+	// Move to the starting position
 	cairo_move_to(c->cr, x, y);
+	// Draw the text
 	pango_cairo_show_layout(c->cr, tl->layout);
+	// Restore the context state to preserve previous settings
+	cairo_restore(c->cr);
 }
 
 void uiDrawTextLayoutExtents(uiDrawTextLayout *tl, double *width, double *height)
