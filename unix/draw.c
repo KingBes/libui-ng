@@ -59,6 +59,9 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 {
 	cairo_pattern_t *pat;
 
+	// Save the current context state before modifying it
+	cairo_save(c->cr);
+
 	uiprivRunPath(path, c->cr);
 	pat = mkbrush(b);
 	cairo_set_source(c->cr, pat);
@@ -89,11 +92,17 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 	cairo_set_dash(c->cr, p->Dashes, p->NumDashes, p->DashPhase);
 	cairo_stroke(c->cr);
 	cairo_pattern_destroy(pat);
+
+	// Restore the context state to preserve previous settings
+	cairo_restore(c->cr);
 }
 
 void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 {
 	cairo_pattern_t *pat;
+
+	// Save the current context state before modifying it
+	cairo_save(c->cr);
 
 	uiprivRunPath(path, c->cr);
 	pat = mkbrush(b);
@@ -108,18 +117,30 @@ void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 	}
 	cairo_fill(c->cr);
 	cairo_pattern_destroy(pat);
+
+	// Restore the context state to preserve previous settings
+	cairo_restore(c->cr);
 }
 
 void uiDrawTransform(uiDrawContext *c, uiDrawMatrix *m)
 {
 	cairo_matrix_t cm;
 
+	// Save the current context state before modifying it
+	cairo_save(c->cr);
+
 	uiprivM2C(m, &cm);
 	cairo_transform(c->cr, &cm);
+
+	// Restore the context state to preserve previous settings
+	cairo_restore(c->cr);
 }
 
 void uiDrawClip(uiDrawContext *c, uiDrawPath *path)
 {
+	// Save the current context state before modifying it
+	cairo_save(c->cr);
+
 	uiprivRunPath(path, c->cr);
 	switch (uiprivPathFillMode(path)) {
 	case uiDrawFillModeWinding:
@@ -130,6 +151,9 @@ void uiDrawClip(uiDrawContext *c, uiDrawPath *path)
 		break;
 	}
 	cairo_clip(c->cr);
+
+	// Restore the context state to preserve previous settings
+	cairo_restore(c->cr);
 }
 
 void uiDrawSave(uiDrawContext *c)
