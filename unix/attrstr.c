@@ -28,6 +28,18 @@ static uiForEach processAttribute(const uiAttributedString *s, const uiAttribute
 	GString *featurestr;
 
 	switch (uiAttributeGetType(attr)) {
+	case uiAttributeTypeBackground:
+		// TODO make sure this works properly with line paragraph spacings (after figuring out what that means, of course)
+		uiAttributeColor(attr, &r, &g, &b, &a);
+		addattr(p, start, end,
+			pango_attr_background_new(
+				(guint16) (r * 65535.0),
+				(guint16) (g * 65535.0),
+				(guint16) (b * 65535.0)));
+		addattr(p, start, end,
+			uiprivFUTURE_pango_attr_background_alpha_new(
+				(guint16) (a * 65535.0)));
+		break;
 	case uiAttributeTypeFamily:
 		addattr(p, start, end,
 			pango_attr_family_new(uiAttributeFamily(attr)));
@@ -58,18 +70,6 @@ static uiForEach processAttribute(const uiAttributedString *s, const uiAttribute
 				(guint16) (b * 65535.0)));
 		addattr(p, start, end,
 			uiprivFUTURE_pango_attr_foreground_alpha_new(
-				(guint16) (a * 65535.0)));
-		break;
-	case uiAttributeTypeBackground:
-		// TODO make sure this works properly with line paragraph spacings (after figuring out what that means, of course)
-		uiAttributeColor(attr, &r, &g, &b, &a);
-		addattr(p, start, end,
-			pango_attr_background_new(
-				(guint16) (r * 65535.0),
-				(guint16) (g * 65535.0),
-				(guint16) (b * 65535.0)));
-		addattr(p, start, end,
-			uiprivFUTURE_pango_attr_background_alpha_new(
 				(guint16) (a * 65535.0)));
 		break;
 	case uiAttributeTypeUnderline:

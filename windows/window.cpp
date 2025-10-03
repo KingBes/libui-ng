@@ -141,11 +141,19 @@ ATOM registerWindowClass(HICON hDefaultIcon, HCURSOR hDefaultCursor)
 {
 	WNDCLASSW wc;
 
+	HICON icon = (HICON)LoadImage(
+          hInstance, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXICON),
+          GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
+
+	// 加载小图标
+	// HICON smallIcon;
+	// LoadIconMetric(NULL, IDI_APPLICATION, LIM_SMALL, &smallIcon);
+
 	ZeroMemory(&wc, sizeof (WNDCLASSW));
 	wc.lpszClassName = windowClass;
 	wc.lpfnWndProc = windowWndProc;
 	wc.hInstance = hInstance;
-	wc.hIcon = hDefaultIcon;
+	wc.hIcon = icon;
 	wc.hCursor = hDefaultCursor;
 	wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE + 1);
 	return RegisterClassW(&wc);

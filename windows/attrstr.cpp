@@ -46,6 +46,11 @@ class combinedEffectsAttr : public IUnknown {
 				uiprivAttributeRelease(this->colorAttr);
 			this->colorAttr = uiprivAttributeRetain(a);
 			break;
+		case uiAttributeTypeBackground:  // 添加背景色处理分支
+			if (this->backgroundAttr != NULL)
+				uiprivAttributeRelease(this->backgroundAttr);
+			this->backgroundAttr = uiprivAttributeRetain(a);
+			break;
 		case uiAttributeTypeUnderline:
 			if (this->underlineAttr != NULL)
 				uiprivAttributeRelease(this->underlineAttr);
@@ -207,6 +212,8 @@ public:
 		}
 		return dea;
 	}
+private:
+    uiAttribute *backgroundAttr;  // 背景色属性
 };
 
 // also needed by applyEffectsAttributes() below
@@ -290,6 +297,9 @@ static uiForEach processAttribute(const uiAttributedString *s, const uiAttribute
 	range.startPosition = start;
 	range.length = end - start;
 	switch (uiAttributeGetType(attr)) {
+	case uiAttributeTypeBackground:
+		addBackgroundParams(p, start, end, attr);
+		break;
 	case uiAttributeTypeFamily:
 		wfamily = toUTF16(uiAttributeFamily(attr));
 		hr = p->layout->SetFontFamilyName(wfamily, range);
@@ -343,9 +353,6 @@ static uiForEach processAttribute(const uiAttributedString *s, const uiAttribute
 		hr = addEffectAttributeToRange(p, start, end, (uiAttribute *) attr);
 		if (hr != S_OK)
 			logHRESULT(L"error applying effect (color, underline, or underline color) attribute", hr);
-		break;
-	case uiAttributeTypeBackground:
-		addBackgroundParams(p, start, end, attr);
 		break;
 	case uiAttributeTypeFeatures:
 		// only generate an attribute if not NULL
