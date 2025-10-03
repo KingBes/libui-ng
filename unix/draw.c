@@ -18,29 +18,52 @@ void uiprivFreeContext(uiDrawContext *c)
 	uiprivFree(c);
 }
 
-static cairo_pattern_t *mkbrush(uiDrawBrush *b)
-{
-	cairo_pattern_t *pat;
+static cairo_pattern_t *mkbrush(uiDrawBrush *b, uiDrawContext *c){
+	cairo_pattern_t *pat = NULL;
 	size_t i;
 
+	// 根据笔刷类型创建相应的cairo模式
 	switch (b->Type) {
 	case uiDrawBrushTypeSolid:
+		// 纯色笔刷
 		pat = cairo_pattern_create_rgba(b->R, b->G, b->B, b->A);
 		break;
 	case uiDrawBrushTypeLinearGradient:
+		// 线性渐变笔刷
 		pat = cairo_pattern_create_linear(b->X0, b->Y0, b->X1, b->Y1);
 		break;
 	case uiDrawBrushTypeRadialGradient:
-		// make the start circle radius 0 to make it a point
+		// 径向渐变笔刷，设置起始圆半径为0使其成为一个点
 		pat = cairo_pattern_create_radial(
 			b->X0, b->Y0, 0,
 			b->X1, b->Y1, b->OuterRadius);
 		break;
-//	case uiDrawBrushTypeImage:
+	case uiDrawBrushTypeImage:
+		// 图像笔刷 - 安全实现
+		// 由于drawtests.c中有TODO标记，说明此功能尚未完全实现
+		// 为避免程序崩溃，我们返回一个透明颜色
+		pat = cairo_pattern_create_rgba(0, 0, 0, 0);
+		break;
+	default:
+		// 未知类型，返回透明颜色
+		pat = cairo_pattern_create_rgba(0, 0, 0, 0);
+		break;
 	}
-	if (cairo_pattern_status(pat) != CAIRO_STATUS_SUCCESS)
+
+	// 检查模式创建是否成功
+	if (pat == NULL) {
+		uiprivImplBug("failed to create pattern");
+		// 创建一个错误标记模式（红色）
+		pat = cairo_pattern_create_rgba(1, 0, 0, 1);
+		return pat;
+	}
+
+	// 检查模式状态
+	if (cairo_pattern_status(pat) != CAIRO_STATUS_SUCCESS) {
 		uiprivImplBug("error creating pattern in mkbrush(): %s",
 			cairo_status_to_string(cairo_pattern_status(pat)));
+	}
+
 	switch (b->Type) {
 	case uiDrawBrushTypeLinearGradient:
 	case uiDrawBrushTypeRadialGradient:
@@ -63,7 +86,7 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 	cairo_save(c->cr);
 
 	uiprivRunPath(path, c->cr);
-	pat = mkbrush(b);
+	pat = mkbrush(b, c);
 	cairo_set_source(c->cr, pat);
 	switch (p->Cap) {
 	case uiDrawLineCapFlat:
@@ -105,7 +128,7 @@ void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 	cairo_save(c->cr);
 
 	uiprivRunPath(path, c->cr);
-	pat = mkbrush(b);
+	pat = mkbrush(b, c);
 	cairo_set_source(c->cr, pat);
 	switch (uiprivPathFillMode(path)) {
 	case uiDrawFillModeWinding:
