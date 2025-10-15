@@ -26,5 +26,5 @@ endif
 executable('qa', libui_qa_sources,
 	dependencies: libui_binary_deps,
 	link_with: libui_libui,
-	win_subsystem: 'windows',
+	gui_app: false,
 	install: false)

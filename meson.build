@@ -8,7 +8,7 @@ project('libui', ['c', 'cpp'],
 	default_options: [
 		'buildtype=debug',				# build debug by default
 		'default_library=shared',			# build shared libraries by default
-		'layout=flat',					# keep all outputs together by default
+		# 'layout=flat',					# keep all outputs together by default
 
 		# these are forced options, but meson doesn't let me set these up separately before I call project() (TODO https://github.com/mesonbuild/meson/issues/5179)
 		'warning_level=3',				# always max warnings
