@@ -122,9 +122,6 @@ static gboolean areaWidget_draw(GtkWidget *w, cairo_t *cr)
 	uiAreaDrawParams dp;
 	double clipX0, clipY0, clipX1, clipY1;
 
-	// 保存当前上下文状态
-	cairo_save(cr);
-
 	dp.Context = uiprivNewContext(cr,
 		gtk_widget_get_style_context(a->widget));
 
@@ -136,12 +133,10 @@ static gboolean areaWidget_draw(GtkWidget *w, cairo_t *cr)
 	dp.ClipWidth = clipX1 - clipX0;
 	dp.ClipHeight = clipY1 - clipY0;
 
-	// 调用用户绘制函数
+	// no need to save or restore the graphics state to reset transformations; GTK+ does that for us
 	(*(a->ah->Draw))(a->ah, a, &dp);
 
 	uiprivFreeContext(dp.Context);
-	// 恢复上下文状态
-	cairo_restore(cr);
 	return FALSE;
 }
 

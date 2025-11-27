@@ -18,52 +18,29 @@ void uiprivFreeContext(uiDrawContext *c)
 	uiprivFree(c);
 }
 
-static cairo_pattern_t *mkbrush(uiDrawBrush *b, uiDrawContext *c){
-	cairo_pattern_t *pat = NULL;
+static cairo_pattern_t *mkbrush(uiDrawBrush *b)
+{
+	cairo_pattern_t *pat;
 	size_t i;
 
-	// 根据笔刷类型创建相应的cairo模式
 	switch (b->Type) {
 	case uiDrawBrushTypeSolid:
-		// 纯色笔刷
 		pat = cairo_pattern_create_rgba(b->R, b->G, b->B, b->A);
 		break;
 	case uiDrawBrushTypeLinearGradient:
-		// 线性渐变笔刷
 		pat = cairo_pattern_create_linear(b->X0, b->Y0, b->X1, b->Y1);
 		break;
 	case uiDrawBrushTypeRadialGradient:
-		// 径向渐变笔刷，设置起始圆半径为0使其成为一个点
+		// make the start circle radius 0 to make it a point
 		pat = cairo_pattern_create_radial(
 			b->X0, b->Y0, 0,
 			b->X1, b->Y1, b->OuterRadius);
 		break;
-	case uiDrawBrushTypeImage:
-		// 图像笔刷 - 安全实现
-		// 由于drawtests.c中有TODO标记，说明此功能尚未完全实现
-		// 为避免程序崩溃，我们返回一个透明颜色
-		pat = cairo_pattern_create_rgba(0, 0, 0, 0);
-		break;
-	default:
-		// 未知类型，返回透明颜色
-		pat = cairo_pattern_create_rgba(0, 0, 0, 0);
-		break;
+//	case uiDrawBrushTypeImage:
 	}
-
-	// 检查模式创建是否成功
-	if (pat == NULL) {
-		uiprivImplBug("failed to create pattern");
-		// 创建一个错误标记模式（红色）
-		pat = cairo_pattern_create_rgba(1, 0, 0, 1);
-		return pat;
-	}
-
-	// 检查模式状态
-	if (cairo_pattern_status(pat) != CAIRO_STATUS_SUCCESS) {
+	if (cairo_pattern_status(pat) != CAIRO_STATUS_SUCCESS)
 		uiprivImplBug("error creating pattern in mkbrush(): %s",
 			cairo_status_to_string(cairo_pattern_status(pat)));
-	}
-
 	switch (b->Type) {
 	case uiDrawBrushTypeLinearGradient:
 	case uiDrawBrushTypeRadialGradient:
@@ -82,11 +59,8 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 {
 	cairo_pattern_t *pat;
 
-	// Save the current context state before modifying it
-	cairo_save(c->cr);
-
 	uiprivRunPath(path, c->cr);
-	pat = mkbrush(b, c);
+	pat = mkbrush(b);
 	cairo_set_source(c->cr, pat);
 	switch (p->Cap) {
 	case uiDrawLineCapFlat:
@@ -115,20 +89,14 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 	cairo_set_dash(c->cr, p->Dashes, p->NumDashes, p->DashPhase);
 	cairo_stroke(c->cr);
 	cairo_pattern_destroy(pat);
-
-	// Restore the context state to preserve previous settings
-	cairo_restore(c->cr);
 }
 
 void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 {
 	cairo_pattern_t *pat;
 
-	// Save the current context state before modifying it
-	cairo_save(c->cr);
-
 	uiprivRunPath(path, c->cr);
-	pat = mkbrush(b, c);
+	pat = mkbrush(b);
 	cairo_set_source(c->cr, pat);
 	switch (uiprivPathFillMode(path)) {
 	case uiDrawFillModeWinding:
@@ -140,30 +108,18 @@ void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 	}
 	cairo_fill(c->cr);
 	cairo_pattern_destroy(pat);
-
-	// Restore the context state to preserve previous settings
-	cairo_restore(c->cr);
 }
 
 void uiDrawTransform(uiDrawContext *c, uiDrawMatrix *m)
 {
 	cairo_matrix_t cm;
 
-	// Save the current context state before modifying it
-	cairo_save(c->cr);
-
 	uiprivM2C(m, &cm);
 	cairo_transform(c->cr, &cm);
-
-	// Restore the context state to preserve previous settings
-	cairo_restore(c->cr);
 }
 
 void uiDrawClip(uiDrawContext *c, uiDrawPath *path)
 {
-	// Save the current context state before modifying it
-	cairo_save(c->cr);
-
 	uiprivRunPath(path, c->cr);
 	switch (uiprivPathFillMode(path)) {
 	case uiDrawFillModeWinding:
@@ -174,9 +130,6 @@ void uiDrawClip(uiDrawContext *c, uiDrawPath *path)
 		break;
 	}
 	cairo_clip(c->cr);
-
-	// Restore the context state to preserve previous settings
-	cairo_restore(c->cr);
 }
 
 void uiDrawSave(uiDrawContext *c)

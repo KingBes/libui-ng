@@ -2,7 +2,6 @@
 #include "uipriv_windows.hpp"
 #include "draw.hpp"
 #include "attrstr.hpp"
-#include <dwrite_3.h>
 
 // TODO verify our renderer is correct, especially with regards to snapping
 
@@ -325,24 +324,19 @@ public:
 		if (dea != NULL) {
 			HRESULT hr;
 
-			// 获取与文本属性关联的颜色
 			hr = dea->mkColorBrush(this->rt, &brush);
 			if (hr != S_OK)
 				return hr;
 		}
 		if (brush == NULL) {
-			// 如果没有指定颜色，使用黑色
 			brush = this->black;
 			brush->AddRef();
 		}
-
-		// 绘制文本
 		this->rt->DrawGlyphRun(
 			baseline,
 			glyphRun,
 			brush,
 			measuringMode);
-
 		brush->Release();
 		return S_OK;
 	}
@@ -484,63 +478,37 @@ void uiDrawText(uiDrawContext *c, uiDrawTextLayout *tl, double x, double y)
 	ID2D1SolidColorBrush *black;
 	textRenderer *renderer;
 	HRESULT hr;
-	D2D1_POINT_2F pt; // 添加pt变量的定义
 
-	// 绘制背景色
+	/*
 	for (auto p : *(tl->backgroundParams)) {
-		ID2D1SolidColorBrush *brush;
-		D2D1_RECT_F rect;
-		DWRITE_TEXT_METRICS metrics;
-	
-		// 获取整个文本布局的度量信息
-		hr = tl->layout->GetMetrics(&metrics);
-		if (hr != S_OK) {
-			// 如果获取度量失败，使用默认值
-			rect.left = x;
-			rect.top = y;
-			rect.right = x + 100; // 默认宽度
-			rect.bottom = y + 20; // 默认高度
-		} else {
-			size_t p_start = p->start > 0 ? p->start - 1 : 0;
-			size_t textLength = tl->nUTF16;
-			double charWidth = (textLength > 0) ? metrics.width / textLength : 0;
-			size_t rangeLength = p->end - p_start;
-			
-			// 计算文本范围的矩形区域
-			rect.left = x + (p_start * charWidth);
-			rect.top = y;
-			rect.right = rect.left + (rangeLength * charWidth);
-			rect.bottom = y + metrics.height;
-		}
-
-		brush = mustMakeSolidBrush(c->rt, p->r, p->g, p->b, p->a);
-		c->rt->FillRectangle(&rect, brush);
-		brush->Release();
+		// TODO
 	}
+	*/
 
 	// TODO document that fully opaque black is the default text color; figure out whether this is upheld in various scenarios on other platforms
 	// TODO figure out if this needs to be cleaned out
 	black = mustMakeSolidBrush(c->rt, 0.0, 0.0, 0.0, 1.0);
 
-#define renderD2D 1
+#define renderD2D 0
 #define renderOur 1
 #if renderD2D
 	pt.x = x;
 	pt.y = y;
-	// 使用Direct2D的内置彩色字体支持
-	// 关键改变：这里使用默认的黑色画刷，避免程序闪退
-	// D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT会让Direct2D自动处理彩色emoji
-	c->rt->DrawTextLayout(pt, tl->layout, black, D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+	// TODO D2D1_DRAW_TEXT_OPTIONS_NO_SNAP?
+	// TODO D2D1_DRAW_TEXT_OPTIONS_CLIP?
+	// TODO LONGTERM when setting 8.1 as minimum (TODO verify), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT?
+	// TODO what is our pixel snapping setting related to the OPTIONS enum values?
+	c->rt->DrawTextLayout(pt, tl->layout, black, D2D1_DRAW_TEXT_OPTIONS_NONE);
 #endif
-// #if renderD2D && renderOur
-// 	// draw ours semitransparent so we can check
-// 	// TODO get the actual color Charles Petzold uses and use that
-// 	black->Release();
-// 	black = mustMakeSolidBrush(c->rt, 1.0, 0.0, 0.0, 0.75);
-// #endif
+#if renderD2D && renderOur
+	// draw ours semitransparent so we can check
+	// TODO get the actual color Charles Petzold uses and use that
+	black->Release();
+	black = mustMakeSolidBrush(c->rt, 1.0, 0.0, 0.0, 0.75);
+#endif
 #if renderOur
 	renderer = new textRenderer(c->rt,
-		TRUE,		// TODO FALSE for no-snap?
+		TRUE,			// TODO FALSE for no-snap?
 		black);
 	hr = tl->layout->Draw(NULL,
 		renderer,
