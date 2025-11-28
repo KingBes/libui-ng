@@ -86,7 +86,9 @@ if libui_MSVC
 		'/bigobj',
 	]
 	if libui_is_debug
-		libui_project_compile_args += ['/RTC1', '/RTCs', '/RTCu']
+		libui_project_compile_args += ['/RTC1', '/RTCs', '/RTCu', '/MTd']
+	else
+		libui_project_compile_args += ['/MT']
 	endif
 
 	libui_project_link_args += [
