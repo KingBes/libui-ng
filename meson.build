@@ -87,8 +87,12 @@ if libui_MSVC
 	]
 	if libui_is_debug
 		libui_project_compile_args += ['/RTC1', '/RTCs', '/RTCu', '/MTd']
+		libui_project_link_args += ['/NODEFAULTLIB:msvcrt.lib', '/NODEFAULTLIB:msvcp_win.lib', '/NODEFAULTLIB:ucrtbase.lib']
+		libui_project_link_args += ['ucrtd.lib', 'vcruntimed.lib', 'msvcrtd.lib']
 	else
 		libui_project_compile_args += ['/MT']
+		libui_project_link_args += ['/NODEFAULTLIB:msvcrt.lib', '/NODEFAULTLIB:msvcp_win.lib', '/NODEFAULTLIB:ucrtbase.lib']
+		libui_project_link_args += ['ucrt.lib', 'vcruntime.lib', 'msvcrt.lib']
 	endif
 
 	libui_project_link_args += [
