@@ -94,6 +94,8 @@ struct textColumnCreateParams {
 			// TODO set wrap and ellipsize modes?
 			[self->tf setTarget:self];
 			[self->tf setAction:@selector(uiprivOnTextFieldAction:)];
+			// Add observer for text editing end notification to handle focus loss
+			[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uiprivOnTextFieldEndEditing:) name:NSControlTextDidEndEditingNotification object:self->tf];
 			[self->tf setTranslatesAutoresizingMaskIntoConstraints:NO];
 			[self addSubview:self->tf];
 
@@ -237,6 +239,8 @@ struct textColumnCreateParams {
 		self->iv = nil;
 	}
 	if (self->tf != nil) {
+		// Remove the notification observer
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSControlTextDidEndEditingNotification object:self->tf];
 		[self->tf release];
 		self->tf = nil;
 	}
@@ -294,6 +298,13 @@ struct textColumnCreateParams {
 	value = uiNewTableValueString([[self->tf stringValue] UTF8String]);
 	uiprivTableModelSetCellValue(self->m, row, self->textModelColumn, value);
 	uiFreeTableValue(value);
+}
+
+- (void)uiprivOnTextFieldEndEditing:(NSNotification *)notification
+{
+	// This method is called when the text field loses focus
+	// We need to trigger the same action as uiprivOnTextFieldAction:
+	[self uiprivOnTextFieldAction:self->tf];
 }
 
 - (IBAction)uiprivOnCheckboxAction:(id)sender
