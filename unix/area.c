@@ -603,6 +603,8 @@ uiArea *uiNewArea(uiAreaHandler *ah)
 
 	a->widget = a->areaWidget;
 
+	gtk_widget_show(a->areaWidget);
+
 	return a;
 }
 
