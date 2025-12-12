@@ -47,7 +47,8 @@ static GType uiTableModel_get_column_type(GtkTreeModel *mm, gint index)
 	case uiTableValueTypeInt:
 		return G_TYPE_INT;
 	case uiTableValueTypeColor:
-		return GDK_TYPE_RGBA;
+		// GDK_TYPE_RGBA is not a boxed type in GTK 3.10, use pointer instead
+		return G_TYPE_POINTER;
 	}
 	// TODO
 	return G_TYPE_INVALID;
@@ -118,16 +119,21 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
             rgba.green = 0;
             rgba.blue = 0;
             rgba.alpha = 0;
-            g_value_set_boxed(value, &rgba);
+            // Allocate memory to store the RGBA value since it will be used after this function returns
+            GdkRGBA *rgba_copy = g_new0(GdkRGBA, 1);
+            *rgba_copy = rgba;
+            g_value_set_pointer(value, rgba_copy);
             return;
         }
         uiTableValueColor(tvalue, &r, &g, &b, &a);
         uiFreeTableValue(tvalue);
-        rgba.red = r;
-        rgba.green = g;
-        rgba.blue = b;
-        rgba.alpha = a;
-        g_value_set_boxed(value, &rgba);
+        // Allocate memory to store the RGBA value since it will be used after this function returns
+        GdkRGBA *rgba_copy = g_new0(GdkRGBA, 1);
+        rgba_copy->red = r;
+        rgba_copy->green = g;
+        rgba_copy->blue = b;
+        rgba_copy->alpha = a;
+        g_value_set_pointer(value, rgba_copy);
         return;
     }
     // TODO
