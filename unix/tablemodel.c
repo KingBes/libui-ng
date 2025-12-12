@@ -117,13 +117,13 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
 		return;
 	case uiTableValueTypeColor:
 		g_value_init(value, GDK_TYPE_RGBA);
-		if (tvalue == NULL)
-		{
+		if (tvalue == NULL) {
+			// Initialize with transparent black
 			rgba.red = 0;
 			rgba.green = 0;
 			rgba.blue = 0;
 			rgba.alpha = 0;
-			g_value_set_struct(value, &rgba);
+			g_value_set_boxed(value, &rgba);
 			return;
 		}
 		uiTableValueColor(tvalue, &r, &g, &b, &a);
@@ -132,7 +132,7 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
 		rgba.green = g;
 		rgba.blue = b;
 		rgba.alpha = a;
-		g_value_set_struct(value, &rgba);
+		g_value_set_boxed(value, &rgba);
 		return;
 	}
 	// TODO
