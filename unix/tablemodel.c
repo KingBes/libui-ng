@@ -5,7 +5,7 @@
 static void uiTableModel_gtk_tree_model_interface_init(GtkTreeModelIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE(uiTableModel, uiTableModel, G_TYPE_OBJECT,
-	G_IMPLEMENT_INTERFACE(GTK_TYPE_TREE_MODEL, uiTableModel_gtk_tree_model_interface_init))
+						G_IMPLEMENT_INTERFACE(GTK_TYPE_TREE_MODEL, uiTableModel_gtk_tree_model_interface_init))
 
 static void uiTableModel_init(uiTableModel *m)
 {
@@ -38,7 +38,8 @@ static GType uiTableModel_get_column_type(GtkTreeModel *mm, gint index)
 {
 	uiTableModel *m = uiTableModel(mm);
 
-	switch (uiprivTableModelColumnType(m, index)) {
+	switch (uiprivTableModelColumnType(m, index))
+	{
 	case uiTableValueTypeString:
 		return G_TYPE_STRING;
 	case uiTableValueTypeImage:
@@ -73,7 +74,7 @@ bad:
 }
 
 // GtkListStore returns NULL on error; let's do that too
-static GtkTreePath *uiTableModel_get_path(GtkTreeModel *mm, GtkTreeIter  *iter)
+static GtkTreePath *uiTableModel_get_path(GtkTreeModel *mm, GtkTreeIter *iter)
 {
 	uiTableModel *m = uiTableModel(mm);
 	gint row;
@@ -97,7 +98,8 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
 
 	row = GPOINTER_TO_INT(iter->user_data);
 	tvalue = uiprivTableModelCellValue(m, row, column);
-	switch (uiprivTableModelColumnType(m, column)) {
+	switch (uiprivTableModelColumnType(m, column))
+	{
 	case uiTableValueTypeString:
 		g_value_init(value, G_TYPE_STRING);
 		g_value_set_string(value, uiTableValueString(tvalue));
@@ -115,8 +117,13 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
 		return;
 	case uiTableValueTypeColor:
 		g_value_init(value, GDK_TYPE_RGBA);
-		if (tvalue == NULL) {
-			g_value_set_boxed(value, NULL);
+		if (tvalue == NULL)
+		{
+			rgba.red = 0;
+			rgba.green = 0;
+			rgba.blue = 0;
+			rgba.alpha = 0;
+			g_value_set_struct(value, &rgba);
 			return;
 		}
 		uiTableValueColor(tvalue, &r, &g, &b, &a);
@@ -125,7 +132,7 @@ static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint col
 		rgba.green = g;
 		rgba.blue = b;
 		rgba.alpha = a;
-		g_value_set_boxed(value, &rgba);
+		g_value_set_struct(value, &rgba);
 		return;
 	}
 	// TODO
@@ -140,7 +147,8 @@ static gboolean uiTableModel_iter_next(GtkTreeModel *mm, GtkTreeIter *iter)
 
 	row = GPOINTER_TO_INT(iter->user_data);
 	row++;
-	if (row >= uiprivTableModelNumRows(m)) {
+	if (row >= uiprivTableModelNumRows(m))
+	{
 		iter->stamp = 0;
 		return FALSE;
 	}
@@ -157,7 +165,8 @@ static gboolean uiTableModel_iter_previous(GtkTreeModel *mm, GtkTreeIter *iter)
 
 	row = GPOINTER_TO_INT(iter->user_data);
 	row--;
-	if (row < 0) {
+	if (row < 0)
+	{
 		iter->stamp = 0;
 		return FALSE;
 	}
@@ -188,7 +197,8 @@ static gboolean uiTableModel_iter_nth_child(GtkTreeModel *mm, GtkTreeIter *iter,
 {
 	uiTableModel *m = uiTableModel(mm);
 
-	if (parent != NULL || n < 0 || n >= uiprivTableModelNumRows(m)) {
+	if (parent != NULL || n < 0 || n >= uiprivTableModelNumRows(m))
+	{
 		iter->stamp = 0;
 		return FALSE;
 	}
@@ -234,8 +244,9 @@ uiTableModel *uiNewTableModel(uiTableModelHandler *mh)
 	uiTableModel *m;
 
 	m = uiTableModel(g_object_new(uiTableModelType, NULL));
-	while ((m->stamp = g_random_int()) == 0) {
-		//iter of 0 means invalid
+	while ((m->stamp = g_random_int()) == 0)
+	{
+		// iter of 0 means invalid
 	}
 	m->mh = mh;
 	return m;
