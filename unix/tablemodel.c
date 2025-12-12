@@ -89,53 +89,48 @@ static GtkTreePath *uiTableModel_get_path(GtkTreeModel *mm, GtkTreeIter *iter)
 static void uiTableModel_get_value(GtkTreeModel *mm, GtkTreeIter *iter, gint column, GValue *value)
 {
 	uiTableModel *m = uiTableModel(mm);
-	gint row;
-	uiTableValue *tvalue;
-	double r, g, b, a;
-	GdkRGBA rgba;
+    gint row;
+    uiTableValue *tvalue;
+    double r, g, b, a;
+    GdkRGBA rgba;
 
-	g_return_if_fail(iter->stamp == m->stamp);
+    g_return_if_fail(iter->stamp == m->stamp);
 
-	row = GPOINTER_TO_INT(iter->user_data);
-	tvalue = uiprivTableModelCellValue(m, row, column);
-	switch (uiprivTableModelColumnType(m, column))
-	{
-	case uiTableValueTypeString:
-		g_value_init(value, G_TYPE_STRING);
-		g_value_set_string(value, uiTableValueString(tvalue));
-		uiFreeTableValue(tvalue);
-		return;
-	case uiTableValueTypeImage:
-		g_value_init(value, G_TYPE_POINTER);
-		g_value_set_pointer(value, uiTableValueImage(tvalue));
-		uiFreeTableValue(tvalue);
-		return;
-	case uiTableValueTypeInt:
-		g_value_init(value, G_TYPE_INT);
-		g_value_set_int(value, uiTableValueInt(tvalue));
-		uiFreeTableValue(tvalue);
-		return;
-	case uiTableValueTypeColor:
-		g_value_init(value, GDK_TYPE_RGBA);
-		if (tvalue == NULL) {
-			// Initialize with transparent black
-			rgba.red = 0;
-			rgba.green = 0;
-			rgba.blue = 0;
-			rgba.alpha = 0;
-			g_value_set_boxed(value, &rgba);
-			return;
-		}
-		uiTableValueColor(tvalue, &r, &g, &b, &a);
-		uiFreeTableValue(tvalue);
-		rgba.red = r;
-		rgba.green = g;
-		rgba.blue = b;
-		rgba.alpha = a;
-		g_value_set_boxed(value, &rgba);
-		return;
-	}
-	// TODO
+    row = GPOINTER_TO_INT(iter->user_data);
+    tvalue = uiprivTableModelCellValue(m, row, column);
+    switch (uiprivTableModelColumnType(m, column)) {
+    case uiTableValueTypeString:
+        g_value_set_string(value, uiTableValueString(tvalue));
+        uiFreeTableValue(tvalue);
+        return;
+    case uiTableValueTypeImage:
+        g_value_set_pointer(value, uiTableValueImage(tvalue));
+        uiFreeTableValue(tvalue);
+        return;
+    case uiTableValueTypeInt:
+        g_value_set_int(value, uiTableValueInt(tvalue));
+        uiFreeTableValue(tvalue);
+        return;
+    case uiTableValueTypeColor:
+        if (tvalue == NULL) {
+            // Initialize with transparent black
+            rgba.red = 0;
+            rgba.green = 0;
+            rgba.blue = 0;
+            rgba.alpha = 0;
+            g_value_set_boxed(value, &rgba);
+            return;
+        }
+        uiTableValueColor(tvalue, &r, &g, &b, &a);
+        uiFreeTableValue(tvalue);
+        rgba.red = r;
+        rgba.green = g;
+        rgba.blue = b;
+        rgba.alpha = a;
+        g_value_set_boxed(value, &rgba);
+        return;
+    }
+    // TODO
 }
 
 static gboolean uiTableModel_iter_next(GtkTreeModel *mm, GtkTreeIter *iter)
